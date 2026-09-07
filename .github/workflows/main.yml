@@ -1,0 +1,32 @@
+name: COOL Compiler CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install Dependencies & SPIM Simulator
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential flex bison spim git
+
+    - name: Set up COOL Compiler
+      run: |
+        git clone https://github.com/a-g-u/cool-assignments.git /tmp/cool
+        echo "/tmp/cool/bin" >> $GITHUB_PATH
+
+    - name: Compile and Test COOL Code
+      run: |
+        coolc hello.cl
+        spim -file hello.s > output.txt
+        cat output.txt
+        grep -q "Hello, World!" output.txt || (echo "Test Failed" && exit 1)
